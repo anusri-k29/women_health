@@ -145,7 +145,7 @@ def main():
         input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
         
     # Transform input using the scaler
-    processed_input = scaler.transform(input_data)
+        processed_input = scaler.transform(input_data)
 
         # Predict Cluster
         cluster = model.predict(processed_input)[0]
