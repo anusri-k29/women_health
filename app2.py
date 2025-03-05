@@ -135,15 +135,15 @@ def main():
     if st.sidebar.button("Predict"):
         # Scale input
         # Ensure input_data is a DataFrame with correct columns
-    input_data = pd.DataFrame([user_inputs], columns=df.columns)  # Adjust 'df' to your actual dataset variable
-    
-    # Debugging prints
-    print("Scaler expected columns:", scaler.feature_names_in_)
-    print("Input columns:", input_data.columns)
-    
-    # Convert to numeric and fill NaNs
-    input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    
+        input_data = pd.DataFrame([user_inputs], columns=df.columns)  # Adjust 'df' to your actual dataset variable
+        
+        # Debugging prints
+        print("Scaler expected columns:", scaler.feature_names_in_)
+        print("Input columns:", input_data.columns)
+        
+        # Convert to numeric and fill NaNs
+        input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+        
     # Transform input using the scaler
     processed_input = scaler.transform(input_data)
 
