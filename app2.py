@@ -133,30 +133,30 @@ def main():
     input_data['HEALTH_SCORE'] = input_data[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
 
     if st.sidebar.button("Predict"):
-        # Scale input
-        # Ensure input_data is a DataFrame with correct columns
-        input_data = pd.DataFrame([user_inputs], columns=df.columns)  # Adjust 'df' to your actual dataset variable
-        
+    # Ensure input_data matches the scaler's expected features
+        input_data = pd.DataFrame([input_data.to_dict(orient='records')[0]], columns=scaler.feature_names_in_)
+    
         # Debugging prints
         print("Scaler expected columns:", scaler.feature_names_in_)
         print("Input columns:", input_data.columns)
         
         # Convert to numeric and fill NaNs
         input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-        
-    # Transform input using the scaler
+    
+        # Transform input using the scaler
         processed_input = scaler.transform(input_data)
-
+    
         # Predict Cluster
         cluster = model.predict(processed_input)[0]
-
+    
         # Cluster Profile
-        cluster_profile = df[df.index == cluster].mean()
-
+        cluster_profile = df.iloc[cluster].to_dict()
+    
         # Display Results
         st.subheader("Health Assessment Results")
         st.write(f"**Assigned Health Cluster:** {cluster}")
         st.write(f"**Health Status:** {classify_health(cluster_profile)}")
+
 
 if __name__ == '__main__':
     main()
