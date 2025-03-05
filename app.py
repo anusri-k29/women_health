@@ -187,12 +187,11 @@ def main():
         'RACE': [0]
     })
     
-    # Add engineered features to input data
     input_data['CHRONIC_SCORE'] = input_data[['DIABETE10', 'HIGHBP10', 'HEART110', 'CHOLST110']].mean(axis=1)
     input_data['MENTAL_HEALTH_IDX'] = input_data[['DEPRESS10', 'SLEEPQL10', 'NERVES10']].mean(axis=1)
-    input_data['HEALTH_SCORE'] = input_data[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
 
-    
+# Now calculate HEALTH_SCORE (after CHRONIC_SCORE and MENTAL_HEALTH_IDX are created)
+    input_data['HEALTH_SCORE'] = input_data[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
     # Prediction
     if st.sidebar.button("Predict"):
         # Preprocess input
