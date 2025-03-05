@@ -47,12 +47,11 @@ def load_data():
     df['MENTAL_HEALTH_IDX'] = df[['DEPRESS10', 'SLEEPQL10', 'NERVES10']].mean(axis=1)
     df['HEALTH_SCORE'] = df[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
 
-    # Standard Scaling
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df.select_dtypes(include=[np.number]))
     df = pd.DataFrame(df_scaled, columns=df.columns)
 
-    return df, scaler
+    return df, scaler  # Return scaler as well
 
 # -------------------------------
 # Load Pre-trained Model
@@ -135,7 +134,18 @@ def main():
 
     if st.sidebar.button("Predict"):
         # Scale input
-        processed_input = scaler.transform(input_data)
+        # Ensure input_data is a DataFrame with correct columns
+    input_data = pd.DataFrame([user_inputs], columns=df.columns)  # Adjust 'df' to your actual dataset variable
+    
+    # Debugging prints
+    print("Scaler expected columns:", scaler.feature_names_in_)
+    print("Input columns:", input_data.columns)
+    
+    # Convert to numeric and fill NaNs
+    input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    
+    # Transform input using the scaler
+    processed_input = scaler.transform(input_data)
 
         # Predict Cluster
         cluster = model.predict(processed_input)[0]
