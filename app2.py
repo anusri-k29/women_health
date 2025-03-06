@@ -47,6 +47,12 @@ def load_data():
     df['MENTAL_HEALTH_IDX'] = df[['DEPRESS10', 'SLEEPQL10', 'NERVES10']].mean(axis=1)
     df['HEALTH_SCORE'] = df[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
     
+    df['CHRONIC_SCORE'] = df['CHRONIC_SCORE'].fillna(df['CHRONIC_SCORE'].median())
+    df['MENTAL_HEALTH_IDX'] = df['MENTAL_HEALTH_IDX'].fillna(df['MENTAL_HEALTH_IDX'].median())
+    df['HEALTH_SCORE'] = df['HEALTH_SCORE'].fillna(df['HEALTH_SCORE'].median())
+    
+    selected_columns.extend(['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'HEALTH_SCORE'])
+    
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df)
     df = pd.DataFrame(df_scaled, columns=df.columns)
