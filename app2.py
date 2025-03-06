@@ -92,6 +92,15 @@ def main():
         
         st.subheader("Health Assessment Results")
         st.write(f"**Assigned Health Cluster:** {cluster}")
+        
+        # Cluster Interpretation
+        cluster_info = {
+            0: "Cluster 0: Higher risk individuals, requiring lifestyle interventions.",
+            1: "Cluster 1: Moderate risk individuals with manageable health conditions.",
+            2: "Cluster 2: Low-risk individuals with good health habits."
+        }
+        
+        st.write(cluster_info.get(cluster, "Unknown Cluster"))
 
 if __name__ == '__main__':
     main()
