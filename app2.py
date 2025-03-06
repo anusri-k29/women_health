@@ -151,15 +151,23 @@ def main():
         print(f"Original Processed Input Shape: {np.shape(processed_input)}")
         
         if hasattr(model, "n_features_in_"):
-            print(f"Model expects {model.n_features_in_} features")
-        # Ensure input shape matches the expected feature size
-        if hasattr(model, "n_features_in_") and np.shape(processed_input)[1] != model.n_features_in_:
-            raise ValueError(f"Feature mismatch! Model expects {model.n_features_in_} features but received {np.shape(processed_input)[1]}.")
-
-        # Reshape input to match the expected format
-        processed_input = np.array(processed_input).reshape(1, -1)
+            expected_features = model.n_features_in_
+            print(f"Model expects {expected_features} features")
+        print(f"Processed Input Shape Before Reshaping: {np.shape(processed_input)}")
         
-        print(f"Final Processed Input Shape: {processed_input.shape}")
+        # Reshape input to match the expected format
+        processed_input = np.array(processed_input)
+        
+        print(f"Processed Input Shape After Conversion: {processed_input.shape}")
+        # Check feature mismatch
+        if processed_input.ndim == 1:
+            processed_input = processed_input.reshape(1, -1)  # Ensure it has 2D shape
+        
+        if processed_input.shape[1] != expected_features:
+            raise ValueError(f"Feature mismatch! Model expects {expected_features} features but received {processed_input.shape[1]}.")
+
+
+        
         cluster = model.predict(processed_input)[0]
     
         # Cluster Profile
