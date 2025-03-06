@@ -24,7 +24,7 @@ def load_data():
         'VITAMNC10', 'VITAMND10', 'VITAMNE10', 'CALCTUM10', 'IRON10', 'ZINC10',
         'SELENIU10', 'FOLATE10', 'VTMSING10', 'EXERCIS10', 'YOGA10', 'DIETNUT10',
         'SMOKERE10', 'MDTALK10', 'HLTHSER10', 'INSURAN10', 'NERVES10', 'DEPRESS10',
-        'SLEEPQL10', 'CHRONIC_SCORE', 'HEALTH_SCORE', 'MENTAL_HEALTH_IDX'
+        'SLEEPQL10'
     ]
     df = df[selected_columns]
     
