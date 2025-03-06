@@ -71,22 +71,19 @@ def main():
     
     # Sidebar Inputs
     st.sidebar.header("Patient Health Assessment")
-    user_inputs = {
+    user_inputs = {col: 0 for col in selected_columns}  # Initialize with default values
+    
+    user_inputs.update({
         'AGE10': st.sidebar.slider("Age", 20, 80, 40),
         'DIABETE10': st.sidebar.selectbox("Diabetes", [0, 1]),
         'HIGHBP10': st.sidebar.selectbox("High Blood Pressure", [0, 1]),
         'DEPRESS10': st.sidebar.slider("Depression Score", 0.0, 5.0, 2.5),
         'SLEEPQL10': st.sidebar.slider("Sleep Quality (1=good, 5=poor)", 1, 5, 3),
         'EXERCIS10': st.sidebar.slider("Exercise Frequency (days/week)", 0, 7, 3)
-    }
+    })
     
     # Create Input DataFrame
     input_data = pd.DataFrame([user_inputs])
-    
-    # Ensure all expected features are present
-    missing_cols = set(selected_columns) - set(input_data.columns)
-    for col in missing_cols:
-        input_data[col] = 0  # Assign default value to missing columns
     
     # Feature Engineering
     input_data['CHRONIC_SCORE'] = input_data[['DIABETE10', 'HIGHBP10', 'HEART110', 'CHOLST110']].mean(axis=1)
@@ -102,7 +99,6 @@ def main():
             return
         
         cluster = model.predict(input_data_scaled)[0]
-        cluster_profile = df.iloc[cluster].to_dict()
         
         st.subheader("Health Assessment Results")
         st.write(f"**Assigned Health Cluster:** {cluster}")
