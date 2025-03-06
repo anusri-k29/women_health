@@ -51,7 +51,7 @@ def load_data():
     df_scaled = scaler.fit_transform(df)
     df = pd.DataFrame(df_scaled, columns=df.columns)
     
-    return df, scaler
+    return df, scaler, selected_columns
 
 # -------------------------------
 # Load Pre-trained Model
@@ -66,28 +66,27 @@ def load_model():
 def main():
     st.title("Women's Health Cluster Analysis Dashboard")
     
-    df, scaler = load_data()
+    df, scaler, selected_columns = load_data()
     model = load_model()
     
     # Sidebar Inputs
     st.sidebar.header("Patient Health Assessment")
-    age = st.sidebar.slider("Age", 20, 80, 40)
-    diabetes = st.sidebar.selectbox("Diabetes", [0, 1])
-    highbp = st.sidebar.selectbox("High Blood Pressure", [0, 1])
-    depression = st.sidebar.slider("Depression Score", 0.0, 5.0, 2.5)
-    sleep_quality = st.sidebar.slider("Sleep Quality (1=good, 5=poor)", 1, 5, 3)
-    exercise = st.sidebar.slider("Exercise Frequency (days/week)", 0, 7, 3)
+    user_inputs = {
+        'AGE10': st.sidebar.slider("Age", 20, 80, 40),
+        'DIABETE10': st.sidebar.selectbox("Diabetes", [0, 1]),
+        'HIGHBP10': st.sidebar.selectbox("High Blood Pressure", [0, 1]),
+        'DEPRESS10': st.sidebar.slider("Depression Score", 0.0, 5.0, 2.5),
+        'SLEEPQL10': st.sidebar.slider("Sleep Quality (1=good, 5=poor)", 1, 5, 3),
+        'EXERCIS10': st.sidebar.slider("Exercise Frequency (days/week)", 0, 7, 3)
+    }
     
     # Create Input DataFrame
-    input_data = pd.DataFrame({
-        'AGE10': [age],
-        'DIABETE10': [diabetes],
-        'HIGHBP10': [highbp],
-        'DEPRESS10': [depression],
-        'SLEEPQL10': [sleep_quality],
-        'EXERCIS10': [exercise],
-        'OSTEOPO10': [0], 'ANEMIA10': [0], 'NERVES10': [0], 'HEART110': [0], 'CHOLST110': [0]
-    })
+    input_data = pd.DataFrame([user_inputs])
+    
+    # Ensure all expected features are present
+    missing_cols = set(selected_columns) - set(input_data.columns)
+    for col in missing_cols:
+        input_data[col] = 0  # Assign default value to missing columns
     
     # Feature Engineering
     input_data['CHRONIC_SCORE'] = input_data[['DIABETE10', 'HIGHBP10', 'HEART110', 'CHOLST110']].mean(axis=1)
@@ -95,24 +94,18 @@ def main():
     input_data['HEALTH_SCORE'] = input_data[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
     
     if st.sidebar.button("Predict"):
-        # Ensure input_data matches the scaler's expected features
-        input_data = pd.DataFrame([input_data.to_dict(orient='records')[0]], columns=scaler.feature_names_in_)
-        input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-        processed_input = scaler.transform(input_data)
+        input_data = input_data[selected_columns]  # Ensure correct feature order
+        input_data_scaled = scaler.transform(input_data)
         
-        if processed_input.ndim == 1:
-            processed_input = processed_input.reshape(1, -1)
-        
-        if processed_input.shape[1] != model.n_features_in_:
-            st.error(f"Feature mismatch! Model expects {model.n_features_in_} features but received {processed_input.shape[1]}.")
+        if input_data_scaled.shape[1] != model.n_features_in_:
+            st.error(f"Feature mismatch! Model expects {model.n_features_in_} features but received {input_data_scaled.shape[1]}.")
             return
         
-        cluster = model.predict(processed_input)[0]
+        cluster = model.predict(input_data_scaled)[0]
         cluster_profile = df.iloc[cluster].to_dict()
         
         st.subheader("Health Assessment Results")
         st.write(f"**Assigned Health Cluster:** {cluster}")
-        st.write(f"**Health Status:** {classify_health(cluster_profile)}")
 
 if __name__ == '__main__':
     main()
