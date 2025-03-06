@@ -8,7 +8,6 @@ import plotly.express as px
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.decomposition import PCA
 
-
 # -------------------------------
 # Data Loading and Preprocessing
 # -------------------------------
