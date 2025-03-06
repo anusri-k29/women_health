@@ -147,6 +147,16 @@ def main():
         processed_input = scaler.transform(input_data)
     
         # Predict Cluster
+        # Ensure processed_input is in the correct shape
+        print(f"Original Processed Input Shape: {np.shape(processed_input)}")
+        
+        if hasattr(model, "n_features_in_"):
+            print(f"Model expects {model.n_features_in_} features")
+        
+        # Reshape input to match the expected format
+        processed_input = np.array(processed_input).reshape(1, -1)
+        
+        print(f"Final Processed Input Shape: {processed_input.shape}")
         cluster = model.predict(processed_input)[0]
     
         # Cluster Profile
