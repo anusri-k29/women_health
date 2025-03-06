@@ -113,6 +113,16 @@ def main():
         st.subheader("Health Assessment Results")
         st.write(f"**Assigned Health Cluster:** {assigned_cluster}")
         st.write(cluster_messages.get(assigned_cluster, "Unknown cluster."))
-
+        def plot_clusters(df, model):
+            pca = PCA(n_components=2)
+            df_pca = pca.fit_transform(df)
+            cluster_labels = model.predict(df)
+        
+            fig = px.scatter(x=df_pca[:, 0], y=df_pca[:, 1], color=cluster_labels.astype(str),
+                             labels={'x': 'PCA Component 1', 'y': 'PCA Component 2'},
+                             title="GMM Cluster Visualization (PCA)")
+            st.plotly_chart(fig)
+        
+    plot_clusters(df, model)
 if __name__ == '__main__':
     main()
