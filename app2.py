@@ -45,7 +45,7 @@ def load_data():
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df)
     
-    return pd.DataFrame(df_scaled, columns=df.columns), scaler
+    return pd.DataFrame(df_scaled, columns=df.columns), scaler, selected_columns
 
 # -------------------------------
 # Load Pre-trained Model
@@ -60,9 +60,12 @@ def load_model():
 def main():
     st.title("Women's Health Cluster Analysis Dashboard")
     
-    df, scaler = load_data()
+    df, scaler, selected_columns = load_data()
     model = load_model()
-    
+
+    # Debugging: Display number of clusters in the model
+    st.write(f"**Number of clusters in the model:** {model.n_components}")
+
     # Sidebar Inputs
     st.sidebar.header("Patient Health Assessment")
     user_inputs = {col: 0.0 for col in df.columns}  # Initialize all features
@@ -81,16 +84,35 @@ def main():
         # Create input DataFrame with ALL features
         input_data = pd.DataFrame([user_inputs])[df.columns]  # Ensure correct order
         
+        # Debugging: Check input data shape
+        st.write(f"**Shape of input data before scaling:** {input_data.shape}")
+
         # Scale input
         input_scaled = scaler.transform(input_data)
-        
+
+        # Debugging: Check if input shape matches model expectations
+        if input_scaled.shape[1] != model.n_features_in_:
+            st.error(f"Feature mismatch! Model expects {model.n_features_in_} features but received {input_scaled.shape[1]}.")
+            return
+
         # Predict cluster
-        cluster = model.predict(input_scaled)[0]
+        assigned_cluster = model.predict(input_scaled)[0]
         
+        # Debugging: Show probability distribution over clusters
+        cluster_probs = model.predict_proba(input_scaled)
+        st.write(f"**Cluster Probabilities:** {cluster_probs}")
+
+        # Cluster interpretation messages
+        cluster_messages = {
+            0: "Cluster 0: Active lifestyle, lower health risks.",
+            1: "Cluster 1: Moderate risk, needs better sleep & diet.",
+            2: "Cluster 2: Higher risk group, needs medical attention.",
+            3: "Cluster 3: Needs stress management & regular checkups."
+        }
+
         st.subheader("Health Assessment Results")
-        st.write(f"**Assigned Health Cluster:** {cluster}")
-        
-        # Add your cluster interpretation logic here
+        st.write(f"**Assigned Health Cluster:** {assigned_cluster}")
+        st.write(cluster_messages.get(assigned_cluster, "Unknown cluster."))
 
 if __name__ == '__main__':
     main()
