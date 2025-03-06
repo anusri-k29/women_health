@@ -152,7 +152,10 @@ def main():
         
         if hasattr(model, "n_features_in_"):
             print(f"Model expects {model.n_features_in_} features")
-        
+        # Ensure input shape matches the expected feature size
+        if hasattr(model, "n_features_in_") and np.shape(processed_input)[1] != model.n_features_in_:
+            raise ValueError(f"Feature mismatch! Model expects {model.n_features_in_} features but received {np.shape(processed_input)[1]}.")
+
         # Reshape input to match the expected format
         processed_input = np.array(processed_input).reshape(1, -1)
         
