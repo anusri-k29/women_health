@@ -8,6 +8,7 @@ import plotly.express as px
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.decomposition import PCA
 
+
 # -------------------------------
 # Data Loading and Preprocessing
 # -------------------------------
@@ -15,22 +16,22 @@ from sklearn.decomposition import PCA
 def load_data():
     df = pd.read_csv('SWAN data.csv')
     
-    # Select necessary columns
+    # Use original 44 features that match the trained model
     selected_columns = [
-        'AGE10', 'LENGCYL10', 'ANEMIA10', 'DIABETE10', 
+        'AGE10', 'PRGNAN10', 'LENGCYL10', 'ENDO10', 'ANEMIA10', 'DIABETE10', 
         'HIGHBP10', 'MIGRAIN10', 'BROKEBO10', 'OSTEOPO10', 'HEART110', 'CHOLST110',
         'THYROI110', 'INSULN110', 'NERVS110', 'ARTHRT110', 'FERTIL110', 'BCP110',
         'REGVITA10', 'ONCEADA10', 'ANTIOXI10', 'VITCOMB10', 'VITAMNA10', 'BETACAR10',
         'VITAMNC10', 'VITAMND10', 'VITAMNE10', 'CALCTUM10', 'IRON10', 'ZINC10',
         'SELENIU10', 'FOLATE10', 'VTMSING10', 'EXERCIS10', 'YOGA10', 'DIETNUT10',
         'SMOKERE10', 'MDTALK10', 'HLTHSER10', 'INSURAN10', 'NERVES10', 'DEPRESS10',
-        'SLEEPQL10'
+        'SLEEPQL10', 'RACE'  # Added back missing columns
     ]
     df = df[selected_columns]
     
     # Handle missing values
-    categorical_cols = ["INSURAN10", "HLTHSER10", "SMOKERE10"]
-    numerical_cols = ["DEPRESS10", "SLEEPQL10", "DIABETE10", "HIGHBP10", "MDTALK10"]
+    categorical_cols = ["RACE", "INSURAN10", "HLTHSER10", "SMOKERE10"]
+    numerical_cols = ["DEPRESS10", "SLEEPQL10", "PRGNAN10", "DIABETE10", "HIGHBP10", "MDTALK10"]
     
     for col in categorical_cols:
         df[col] = df[col].fillna(df[col].mode()[0])
@@ -44,9 +45,8 @@ def load_data():
     
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df)
-    df = pd.DataFrame(df_scaled, columns=df.columns)
     
-    return df, scaler, selected_columns
+    return pd.DataFrame(df_scaled, columns=df.columns), scaler
 
 # -------------------------------
 # Load Pre-trained Model
@@ -61,13 +61,14 @@ def load_model():
 def main():
     st.title("Women's Health Cluster Analysis Dashboard")
     
-    df, scaler, selected_columns = load_data()
+    df, scaler = load_data()
     model = load_model()
     
     # Sidebar Inputs
     st.sidebar.header("Patient Health Assessment")
-    user_inputs = {col: 0 for col in selected_columns}  # Initialize with default values
+    user_inputs = {col: 0.0 for col in df.columns}  # Initialize all features
     
+    # Update with actual inputs
     user_inputs.update({
         'AGE10': st.sidebar.slider("Age", 20, 80, 40),
         'DIABETE10': st.sidebar.selectbox("Diabetes", [0, 1]),
@@ -77,30 +78,20 @@ def main():
         'EXERCIS10': st.sidebar.slider("Exercise Frequency (days/week)", 0, 7, 3)
     })
     
-    # Create Input DataFrame
-    input_data = pd.DataFrame([user_inputs])
-    
     if st.sidebar.button("Predict"):
-        input_data = input_data[selected_columns]  # Ensure correct feature order
-        input_data_scaled = scaler.transform(input_data)
+        # Create input DataFrame with ALL features
+        input_data = pd.DataFrame([user_inputs])[df.columns]  # Ensure correct order
         
-        if input_data_scaled.shape[1] != model.n_features_in_:
-            st.error(f"Feature mismatch! Model expects {model.n_features_in_} features but received {input_data_scaled.shape[1]}.")
-            return
+        # Scale input
+        input_scaled = scaler.transform(input_data)
         
-        cluster = model.predict(input_data_scaled)[0]
+        # Predict cluster
+        cluster = model.predict(input_scaled)[0]
         
         st.subheader("Health Assessment Results")
         st.write(f"**Assigned Health Cluster:** {cluster}")
         
-        # Cluster Interpretation
-        cluster_info = {
-            0: "Cluster 0: Higher risk individuals, requiring lifestyle interventions.",
-            1: "Cluster 1: Moderate risk individuals with manageable health conditions.",
-            2: "Cluster 2: Low-risk individuals with good health habits."
-        }
-        
-        st.write(cluster_info.get(cluster, "Unknown Cluster"))
+        # Add your cluster interpretation logic here
 
 if __name__ == '__main__':
     main()
