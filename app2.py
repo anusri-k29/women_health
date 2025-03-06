@@ -24,7 +24,7 @@ def load_data():
         'VITAMNC10', 'VITAMND10', 'VITAMNE10', 'CALCTUM10', 'IRON10', 'ZINC10',
         'SELENIU10', 'FOLATE10', 'VTMSING10', 'EXERCIS10', 'YOGA10', 'DIETNUT10',
         'SMOKERE10', 'MDTALK10', 'HLTHSER10', 'INSURAN10', 'NERVES10', 'DEPRESS10',
-        'SLEEPQL10'
+        'SLEEPQL10', 'CHRONIC_SCORE', 'HEALTH_SCORE', 'MENTAL_HEALTH_IDX'
     ]
     df = df[selected_columns]
     
@@ -41,11 +41,6 @@ def load_data():
     le = LabelEncoder()
     for col in categorical_cols:
         df[col] = le.fit_transform(df[col])
-    
-    # Feature Engineering
-    df['CHRONIC_SCORE'] = df[['DIABETE10', 'HIGHBP10', 'HEART110', 'CHOLST110']].mean(axis=1)
-    df['MENTAL_HEALTH_IDX'] = df[['DEPRESS10', 'SLEEPQL10', 'NERVES10']].mean(axis=1)
-    df['HEALTH_SCORE'] = df[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
     
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df)
@@ -84,11 +79,6 @@ def main():
     
     # Create Input DataFrame
     input_data = pd.DataFrame([user_inputs])
-    
-    # Feature Engineering
-    input_data['CHRONIC_SCORE'] = input_data[['DIABETE10', 'HIGHBP10', 'HEART110', 'CHOLST110']].mean(axis=1)
-    input_data['MENTAL_HEALTH_IDX'] = input_data[['DEPRESS10', 'SLEEPQL10', 'NERVES10']].mean(axis=1)
-    input_data['HEALTH_SCORE'] = input_data[['CHRONIC_SCORE', 'MENTAL_HEALTH_IDX', 'OSTEOPO10', 'ANEMIA10', 'SLEEPQL10']].mean(axis=1)
     
     if st.sidebar.button("Predict"):
         input_data = input_data[selected_columns]  # Ensure correct feature order
